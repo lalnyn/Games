@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>洛洛消消乐</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', cursive, sans-serif;
+  background: linear-gradient(180deg, #87CEEB 0%, #98FB98 30%, #FFE4B5 60%, #FFB6C1 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 0;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 装饰性云朵 */
+.clouds { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.cloud {
+  position: absolute; background: rgba(255,255,255,0.7);
+  border-radius: 50%; animation: floatCloud linear infinite;
+}
+.cloud::before, .cloud::after {
+  content: ''; position: absolute; background: inherit; border-radius: 50%;
+}
+.cloud-1 { width: 120px; height: 50px; top: 5%; left: 10%; animation-duration: 25s; }
+.cloud-1::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+.cloud-1::after { width: 40px; height: 40px; top: -15px; left: 60px; }
+.cloud-2 { width: 150px; height: 55px; top: 12%; left: 60%; animation-duration: 30s; animation-delay: -8s; }
+.cloud-2::before { width: 70px; height: 70px; top: -35px; left: 25px; }
+.cloud-2::after { width: 50px; height: 50px; top: -20px; left: 70px; }
+.cloud-3 { width: 100px; height: 40px; top: 8%; left: 35%; animation-duration: 22s; animation-delay: -15s; }
+.cloud-3::before { width: 50px; height: 50px; top: -25px; left: 15px; }
+.cloud-3::after { width: 35px; height: 35px; top: -12px; left: 50px; }
+.cloud-4 { width: 130px; height: 48px; top: 18%; left: 80%; animation-duration: 28s; animation-delay: -5s; }
+.cloud-4::before { width: 65px; height: 65px; top: -32px; left: 22px; }
+.cloud-4::after { width: 45px; height: 45px; top: -18px; left: 65px; }
+
+@keyframes floatCloud {
+  from { transform: translateX(-100px); }
+  to { transform: translateX(calc(100vw + 200px)); }
+}
+
+/* 草地装饰 */
+.grass-decoration {
+  position: fixed; bottom: 0; left: 0; width: 100%; height: 80px;
+  background: linear-gradient(0deg, #4CAF50 0%, #66BB6A 30%, #81C784 60%, transparent 100%);
+  pointer-events: none; z-index: 0;
+  border-radius: 60% 70% 0 0 / 30px 30px 0 0;
+}
+.grass-decoration::before {
+  content: '🌻 🌸 🌷 🌼 🌺 🌻 🌸 🌷 🌼 🌺';
+  position: absolute; top: -35px; left: 0; width: 100%;
+  font-size: 30px; text-align: center; letter-spacing: 15px;
+  animation: swayFlowers 4s ease-in-out infinite;
+}
+@keyframes swayFlowers {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}
+
+.game-container {
+  background: rgba(255,255,255,0.65);
+  border-radius: 30px;
+  padding: 20px 22px;
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.15),
+    0 0 0 5px rgba(255,255,255,0.4),
+    0 0 0 10px rgba(255,182,193,0.3),
+    0 0 0 15px rgba(255,255,255,0.2);
+  backdrop-filter: blur(15px);
+  position: relative;
+  z-index: 1;
+  width: 95vw;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin: 0 auto;
+}
+
+/* 顶部标题装饰 */
+.game-title-deco {
+  text-align: center;
+  font-size: 22px; color: #FF6B8A; letter-spacing: 3px;
+  font-weight: bold;
+}
+.game-title-deco span { margin: 0 6px; }
+
+.game-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #FFF5F5, #FFF0F5, #F0F8FF);
+  border-radius: 20px;
+  border: 2px dashed #FFB6C1;
+  width: 100%;
+}
+.level-badge {
+  background: linear-gradient(135deg, #FF6B8A, #FF8E53);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(255,107,138,0.4);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  text-align: center;
+  white-space: nowrap;
+}
+.stat-item {
+  background: rgba(255,255,255,0.8);
+  color: #555;
+  padding: 8px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid #FFE4E1;
+}
+.stat-item.score { color: #FF8C00; border-color: #FFD700; }
+.stat-item.moves { color: #4682B4; border-color: #87CEEB; }
+.stat-item.timer { color: #FF6347; border-color: #FFA07A; }
+
+.mission-panel {
+  background: linear-gradient(135deg, #FFF8DC, #FFEFD5, #FFFACD);
+  border-radius: 18px;
+  padding: 16px 14px;
+  border: 2px solid #FFD700;
+  position: relative;
+  width: 100%;
+}
+.mission-panel::before {
+  content: '⭐'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  font-size: 24px; animation: bounceStar 1s ease-in-out infinite;
+}
+@keyframes bounceStar {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-8px); }
+}
+.mission-title {
+  color: #FF6347;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.mission-list { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.mission-item {
+  background: rgba(255,255,255,0.8);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  border: 2px solid #EEE;
+  transition: all 0.3s;
+}
+.mission-item.completed {
+  background: rgba(144,238,144,0.4);
+  border-color: #32CD32;
+  color: #228B22;
+}
+.mission-item.completed .mission-label { text-decoration: line-through; }
+.mission-emoji { font-size: 18px; }
+.obstacle-icon { font-size: 18px; }
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 3px;
+  background: linear-gradient(135deg, #FFF5EE, #FFEFD5, #F0FFF0);
+  padding: 10px;
+  border-radius: 20px;
+  border: 3px solid #FFDAB9;
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 1;
+}
+.cell {
+  width: 100%; height: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(18px, 4vw, 30px);
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12), inset 0 2px 3px rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.85);
+}
+.cell:hover { transform: scale(1.08); z-index: 5; }
+.cell.selected {
+  transform: scale(1.15);
+  z-index: 4;
+  animation: pulseSelect 0.7s infinite;
+}
+@keyframes pulseSelect {
+  0%,100% { box-shadow: 0 0 10px #FFD700, 0 0 25px rgba(255,215,0,0.6); }
+  50% { box-shadow: 0 0 20px #FFD700, 0 0 45px rgba(255,215,0,0.9); }
+}
+.cell.drag-over {
+  box-shadow: 0 0 15px #00BFFF, 0 0 30px rgba(0,191,255,0.6) !important;
+  transform: scale(1.1);
+}
+
+/* 障碍物样式 */
+.cell.ice-cell {
+  background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 50%, #80DEEA 100%) !important;
+  border: 3px solid #fff;
+  box-shadow: 0 0 12px rgba(100,200,255,0.6), inset 0 0 10px rgba(255,255,255,0.8);
+}
+.cell.ice-cell::after {
+  content: '🧊';
+  font-size: 28px;
+  position: absolute;
+  animation: iceShimmer 2s infinite;
+}
+@keyframes iceShimmer {
+  0%,100% { opacity: 0.9; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.3); }
+}
+.cell.wood-cell {
+  background: linear-gradient(135deg, #D7CCC8 0%, #BCAAA4 30%, #8D6E63 60%, #6D4C41 100%) !important;
+  border: 3px solid #5D4037;
+  box-shadow: 0 0 8px rgba(109,76,65,0.5), inset 0 0 6px rgba(0,0,0,0.2);
+  background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.1) 4px, rgba(0,0,0,0.1) 6px);
+}
+.cell.wood-cell::after {
+  content: '🪵';
+  font-size: 26px;
+  position: absolute;
+}
+.cell.fire-cell {
+  background: linear-gradient(135deg, #FF5722 0%, #FF9800 30%, #FFC107 50%, #FF5722 100%) !important;
+  border: 3px solid #FF6D00;
+  box-shadow: 0 0 18px rgba(255,87,34,0.7), 0 0 35px rgba(255,152,0,0.4);
+  animation: fireFlicker 0.4s ease-in-out infinite alternate;
+}
+.cell.fire-cell::after {
+  content: '🔥';
+  font-size: 28px;
+  position: absolute;
+  animation: fireBounce 0.5s ease-in-out infinite alternate;
+}
+@keyframes fireFlicker {
+  from { box-shadow: 0 0 14px rgba(255,87,34,0.6), 0 0 28px rgba(255,152,0,0.3); }
+  to { box-shadow: 0 0 22px rgba(255,87,34,0.9), 0 0 40px rgba(255,152,0,0.5); }
+}
+@keyframes fireBounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+/* 道具样式 - 直接显示道具图标 */
+.cell.powerup-plane {
+  animation: powerupGlow 0.8s ease-in-out infinite alternate;
+  background: linear-gradient(135deg, #FFF9C4, #FFE082) !important;
+  border: 3px solid #FFD700;
+}
+.cell.powerup-rocket_h, .cell.powerup-rocket_v {
+  animation: powerupGlow 0.8s ease-in-out infinite alternate;
+  background: linear-gradient(135deg, #FFCCBC, #FFAB91) !important;
+  border: 3px solid #FF5722;
+}
+.cell.powerup-bomb {
+  animation: powerupGlow 0.6s ease-in-out infinite alternate;
+  background: linear-gradient(135deg, #E1BEE7, #CE93D8) !important;
+  border: 3px solid #9C27B0;
+}
+.cell.powerup-rainbow {
+  animation: rainbowGlow 0.7s ease-in-out infinite alternate;
+  background: linear-gradient(135deg, #FF6B8A, #FF8E53, #FFD700, #7EC8A0, #87CEEB, #CE93D8) !important;
+  border: 3px solid #fff;
+}
+@keyframes rainbowGlow {
+  from { box-shadow: 0 0 10px #FFD700, 0 0 20px rgba(255,215,0,0.5), 0 0 30px rgba(255,105,135,0.4); }
+  to { box-shadow: 0 0 18px #fff, 0 0 35px rgba(255,255,255,0.8), 0 0 50px rgba(255,215,0,0.7); }
+}
+@keyframes powerupGlow {
+  from { box-shadow: 0 0 8px gold, 0 0 16px rgba(255,215,0,0.4); }
+  to { box-shadow: 0 0 16px gold, 0 0 30px rgba(255,215,0,0.7); }
+}
+.powerup-indicator {
+  position: absolute;
+  top: -8px; left: 50%; transform: translateX(-50%);
+  font-size: 18px;
+  z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+  animation: indicatorBounce 0.5s ease-in-out infinite alternate;
+}
+@keyframes indicatorBounce {
+  from { transform: translateX(-50%) translateY(0); }
+  to { transform: translateX(-50%) translateY(-4px); }
+}
+
+/* 消除动画 - 弹跳放大 + 粒子飞散 */
+@keyframes popBounce {
+  0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+  15% { transform: scale(1.4); opacity: 0.9; filter: brightness(1.8); }
+  50% { transform: scale(1.5); opacity: 0.3; filter: brightness(2.5); }
+  100% { transform: scale(0); opacity: 0; filter: brightness(3); }
+}
+.cell.popping { animation: popBounce 0.22s ease-out forwards; z-index: 10; }
+
+/* 消除时的粒子 */
+.match-particle {
+  position: fixed; pointer-events: none; z-index: 299;
+  font-size: 16px; animation: particleFly 0.25s ease-out forwards;
+}
+@keyframes particleFly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
+}
+
+/* 消除闪光 */
+@keyframes matchFlash {
+  0% { box-shadow: 0 0 0px #fff, 0 0 0px rgba(255,255,255,0); }
+  50% { box-shadow: 0 0 25px #fff, 0 0 50px rgba(255,255,255,0.9); }
+  100% { box-shadow: 0 0 0px #fff, 0 0 0px rgba(255,255,255,0); }
+}
+.cell.match-flash { animation: matchFlash 0.4s ease-out; }
+
+@keyframes fallIn {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.cell.falling { animation: fallIn 0.2s ease-out; }
+
+/* 得分弹出 */
+.score-pop {
+  position: fixed; pointer-events: none; z-index: 300;
+  font-weight: bold; font-size: 18px; color: #FFD700;
+  text-shadow: 0 0 8px rgba(255,215,0,0.8), 0 2px 4px rgba(0,0,0,0.3);
+  animation: scoreFloat 0.5s ease-out forwards;
+}
+@keyframes scoreFloat {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+/* 障碍物破碎动画 */
+@keyframes obstacleBreak {
+  0% { transform: scale(1); opacity: 1; }
+  30% { transform: scale(1.4); opacity: 0.8; }
+  100% { transform: scale(0); opacity: 0; }
+}
+.cell.obstacle-breaking { animation: obstacleBreak 0.3s ease-out forwards; }
+
+/* 飞行道具动画 */
+.flying-prop {
+  position: fixed; z-index: 300; pointer-events: none;
+  font-size: 40px; transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.rocket-trail {
+  position: fixed; z-index: 299; pointer-events: none;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #FF4500; box-shadow: 0 0 8px #FF6347;
+  animation: trailFade 0.5s ease-out forwards;
+}
+@keyframes trailFade {
+  to { opacity: 0; transform: scale(0); }
+}
+.explosion-ring {
+  position: fixed; z-index: 298; pointer-events: none;
+  border: 4px solid #FF4500; border-radius: 50%;
+  animation: ringExpand 0.45s ease-out forwards;
+}
+@keyframes ringExpand {
+  from { width: 10px; height: 10px; opacity: 1; }
+  to { width: 100px; height: 100px; opacity: 0; }
+}
+
+/* 按钮 */
+.controls {
+  display: flex; gap: 10px; margin-top: 12px; justify-content: center; flex-wrap: wrap;
+}
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  color: #fff;
+  font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', cursive, sans-serif;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+}
+.btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+.btn:active { transform: translateY(0); }
+.btn-restart { background: linear-gradient(135deg, #A8E6CF, #7EC8A0); color: #2E7D32; }
+.btn-hint { background: linear-gradient(135deg, #FFD54F, #FFB300); color: #5D4037; }
+.btn-home { background: linear-gradient(135deg, #CE93D8, #AB47BC); }
+
+/* 覆盖层 */
+.overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; animation: fadeIn 0.3s;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.overlay-content {
+  background: linear-gradient(180deg, #FFF8E1, #FFECB3, #FFE0B2);
+  padding: 35px 30px;
+  border-radius: 30px;
+  text-align: center;
+  color: #5D4037;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 4px #FFB74D, 0 0 0 8px rgba(255,183,77,0.3);
+  max-width: 460px;
+  width: 92%;
+  position: relative;
+}
+.overlay-content h2 { font-size: 30px; margin-bottom: 8px; color: #FF6B8A; }
+.overlay-content h3 { font-size: 18px; color: #FF8E53; margin-bottom: 12px; }
+.overlay-content p { margin: 6px 0; font-size: 15px; color: #8D6E63; }
+
+/* 首页样式 */
+.home-title {
+  font-size: 38px;
+  background: linear-gradient(135deg, #FF6B8A, #FF8E53, #FFD700, #7EC8A0, #87CEEB, #CE93D8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+  letter-spacing: 3px;
+}
+.home-subtitle {
+  font-size: 15px; color: #FF8E53; margin-bottom: 18px;
+}
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 5px;
+}
+.level-btn {
+  width: 55px; height: 55px;
+  border-radius: 15px;
+  border: 3px solid #FFB74D;
+  background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #E65100;
+  transition: all 0.2s;
+  font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', cursive, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.level-btn:hover {
+  transform: scale(1.15);
+  background: linear-gradient(135deg, #FFE082, #FFB74D);
+  border-color: #FF8F00;
+  box-shadow: 0 6px 20px rgba(255,143,0,0.4);
+}
+.level-btn.locked {
+  background: #E0E0E0;
+  border-color: #BDBDBD;
+  color: #9E9E9E;
+  cursor: not-allowed;
+}
+.level-btn.current {
+  border-color: #FF5722;
+  animation: currentPulse 1.5s infinite;
+  box-shadow: 0 0 20px rgba(255,87,34,0.5);
+}
+@keyframes currentPulse {
+  0%,100% { box-shadow: 0 0 10px rgba(255,87,34,0.3); }
+  50% { box-shadow: 0 0 25px rgba(255,87,34,0.6); }
+}
+
+.btn-play { background: linear-gradient(135deg, #66BB6A, #43A047); padding: 12px 36px; font-size: 18px; }
+.btn-next { background: linear-gradient(135deg, #FF7043, #F4511E); padding: 12px 36px; font-size: 18px; }
+.btn-menu { background: linear-gradient(135deg, #AB47BC, #8E24AA); padding: 12px 36px; font-size: 18px; }
+
+/* 烟花画布 */
+#firework-canvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 200;
+}
+
+/* 道具提示 */
+.powerup-tip {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.8); color: #FFD700;
+  padding: 8px 20px; border-radius: 20px;
+  font-size: 13px; z-index: 50; pointer-events: none;
+  animation: tipFade 2s ease-out forwards;
+}
+@keyframes tipFade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 响应式 */
+@media (max-width: 750px) {
+  .game-container { padding: 12px; }
+  .mission-list { flex-direction: row; flex-wrap: wrap; }
+  .game-board { grid-template-columns: repeat(8, 38px); grid-template-rows: repeat(8, 38px); gap: 2px; padding: 6px; }
+  .cell { width: 38px; height: 38px; font-size: 22px; border-radius: 9px; }
+  .cell.ice-cell::after { font-size: 20px; }
+  .cell.wood-cell::after { font-size: 18px; }
+  .cell.fire-cell::after { font-size: 20px; }
+  .level-badge { font-size: 13px; padding: 5px 12px; }
+  .mission-item { font-size: 11px; padding: 5px 8px; }
+  .level-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .level-btn { width: 44px; height: 44px; font-size: 15px; }
+  .game-header { flex-direction: row; flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- 装饰云朵 -->
+<div class="clouds">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+  <div class="cloud cloud-4"></div>
+</div>
+<div class="grass-decoration"></div>
+
+<canvas id="firework-canvas"></canvas>
+
+<!-- 游戏界面 -->
+<div class="game-container" id="gameContainer" style="display:none;">
+  <div class="game-title-deco"><span>🌈</span>洛洛消消乐<span>🌟</span></div>
+  <div class="game-header">
+    <div class="level-badge" id="levelBadge">第 1 关</div>
+    <div class="stat-item score">⭐ <span id="scoreText">0</span></div>
+    <div class="stat-item moves">👣 <span id="movesText">30</span></div>
+    <div class="stat-item timer">⏱ <span id="timerText">120</span>s</div>
+  </div>
+  <div class="mission-panel">
+    <div class="mission-title">🎯 关卡任务</div>
+    <div class="mission-list" id="missionList"></div>
+  </div>
+  <div class="game-board" id="gameBoard"></div>
+  <div class="controls">
+    <button class="btn btn-hint" onclick="showHint()">💡 提示</button>
+    <button class="btn btn-restart" onclick="restartLevel()">🔄 重新开始</button>
+    <button class="btn btn-home" onclick="goHome()">🏠 主页</button>
+  </div>
+</div>
+
+<!-- 首页 -->
+<div class="overlay" id="homeOverlay">
+  <div class="overlay-content">
+    <div class="home-title">🌈 洛洛消消乐 🌟</div>
+    <div class="home-subtitle">🐱 和可爱的动物们一起冒险吧！🐰</div>
+    <p style="font-size:13px;color:#999;">拖拽动物交换位置，三个以上即可消除~</p>
+    <div class="level-grid" id="levelGrid"></div>
+    <button class="btn btn-play" onclick="startSelectedLevel()">🎮 开始冒险</button>
+  </div>
+</div>
+
+<!-- 结果弹窗 -->
+<div class="overlay" id="resultOverlay" style="display:none;">
+  <div class="overlay-content" id="resultContent"></div>
+</div>
+
+<script>
+// ==================== 游戏核心逻辑 ====================
+
+const ROWS = 8, COLS = 8;
+
+// 可爱动物（6种）
+const ANIMALS = ['cat','bunny','bear','fox','panda','frog'];
+const ANIMAL_EMOJI = { cat:'🐱', bunny:'🐰', bear:'🐻', fox:'🦊', panda:'🐼', frog:'🐸' };
+const ANIMAL_BG = {
+  cat: 'linear-gradient(135deg, #FFE0E0, #FFCCCC)',
+  bunny: 'linear-gradient(135deg, #FFF0F5, #FFE4E1)',
+  bear: 'linear-gradient(135deg, #EFEBE9, #D7CCC8)',
+  fox: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)',
+  panda: 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
+  frog: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)'
+};
+
+// 障碍物类型
+const OBSTACLE_TYPES = ['ice','wood','fire'];
+const OBSTACLE_EMOJI = { ice:'🧊', wood:'🪵', fire:'🔥' };
+const OBSTACLE_NAMES = { ice:'冰块', wood:'木头', fire:'火焰' };
+
+// 道具类型
+const POWERUP_TYPES = ['plane','rocket_h','rocket_v','bomb','rainbow'];
+const POWERUP_EMOJI = { plane:'✈️', rocket_h:'🚀', rocket_v:'🚀', bomb:'💣', rainbow:'🌈' };
+const POWERUP_NAMES = { plane:'飞机', rocket_h:'水平火箭', rocket_v:'垂直火箭', bomb:'炸弹', rainbow:'彩虹花' };
+
+let board = [];           // 动物类型 或 null, 或 {type:'powerup', powerup:'plane'|'rocket_h'|'rocket_v'|'bomb', animal?}
+let obstacleBoard = [];   // null | 'ice' | 'wood' | 'fire'
+let selectedCell = null;
+let score = 0;
+let movesLeft = 0;
+let timeLeft = 0;
+let currentLevel = 1;
+let timerInterval = null;
+let isAnimating = false;
+let missions = [];
+let levelConfig = null;
+
+// 拖拽相关
+let dragStartCell = null;
+let isDragging = false;
+
+// ==================== 关卡配置 ====================
+function getLevelConfig(level) {
+  const configs = [
+    // 1-5关：入门，简单收集
+    { missions:[{type:'collect',animal:'cat',total:15},{type:'collect',animal:'bunny',total:15}], moves:30, time:120, obstacleCount:0, obstacleType:null, animals:4 },
+    { missions:[{type:'collect',animal:'bear',total:18},{type:'collect',animal:'fox',total:16}], moves:28, time:110, obstacleCount:0, obstacleType:null, animals:4 },
+    { missions:[{type:'collect',animal:'panda',total:16},{type:'obstacle',obstacleType:'ice',total:8}], moves:30, time:130, obstacleCount:8, obstacleType:'ice', animals:5 },
+    { missions:[{type:'collect',animal:'frog',total:20},{type:'collect',animal:'cat',total:18}], moves:28, time:115, obstacleCount:4, obstacleType:'wood', animals:6 },
+    { missions:[{type:'collect',animal:'bunny',total:20},{type:'obstacle',obstacleType:'wood',total:10},{type:'collect',animal:'bear',total:12}], moves:32, time:140, obstacleCount:10, obstacleType:'wood', animals:5 },
+
+    // 6-10关
+    { missions:[{type:'collect',animal:'fox',total:22},{type:'collect',animal:'panda',total:20}], moves:30, time:120, obstacleCount:6, obstacleType:'ice', animals:5 },
+    { missions:[{type:'obstacle',obstacleType:'ice',total:14},{type:'collect',animal:'frog',total:14}], moves:32, time:140, obstacleCount:14, obstacleType:'ice', animals:6 },
+    { missions:[{type:'collect',animal:'cat',total:25},{type:'collect',animal:'bunny',total:22},{type:'collect',animal:'bear',total:16}], moves:35, time:150, obstacleCount:8, obstacleType:'fire', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'fire',total:14},{type:'collect',animal:'fox',total:18}], moves:30, time:130, obstacleCount:14, obstacleType:'fire', animals:5 },
+    { missions:[{type:'collect',animal:'panda',total:24},{type:'obstacle',obstacleType:'wood',total:12},{type:'collect',animal:'frog',total:18}], moves:34, time:145, obstacleCount:12, obstacleType:'wood', animals:6 },
+
+    // 11-15关
+    { missions:[{type:'collect',animal:'cat',total:28},{type:'collect',animal:'fox',total:26}], moves:32, time:125, obstacleCount:10, obstacleType:'fire', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'ice',total:18},{type:'collect',animal:'bunny',total:20}], moves:32, time:135, obstacleCount:18, obstacleType:'ice', animals:5 },
+    { missions:[{type:'collect',animal:'bear',total:28},{type:'collect',animal:'panda',total:26}], moves:30, time:120, obstacleCount:12, obstacleType:'wood', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'fire',total:20},{type:'collect',animal:'frog',total:18}], moves:33, time:140, obstacleCount:20, obstacleType:'fire', animals:6 },
+    { missions:[{type:'collect',animal:'cat',total:30},{type:'obstacle',obstacleType:'ice',total:16},{type:'collect',animal:'fox',total:22}], moves:36, time:155, obstacleCount:16, obstacleType:'ice', animals:6 },
+
+    // 16-20关
+    { missions:[{type:'obstacle',obstacleType:'wood',total:22},{type:'collect',animal:'bunny',total:22}], moves:32, time:135, obstacleCount:22, obstacleType:'wood', animals:6 },
+    { missions:[{type:'collect',animal:'bear',total:32},{type:'collect',animal:'panda',total:28}], moves:32, time:120, obstacleCount:14, obstacleType:'fire', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'ice',total:24},{type:'collect',animal:'cat',total:20},{type:'collect',animal:'frog',total:18}], moves:36, time:150, obstacleCount:24, obstacleType:'ice', animals:6 },
+    { missions:[{type:'collect',animal:'fox',total:35},{type:'collect',animal:'bunny',total:28}], moves:34, time:130, obstacleCount:16, obstacleType:'wood', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'fire',total:26},{type:'collect',animal:'panda',total:22},{type:'collect',animal:'bear',total:18}], moves:38, time:160, obstacleCount:26, obstacleType:'fire', animals:6 },
+
+    // 21-25关
+    { missions:[{type:'collect',animal:'cat',total:36},{type:'obstacle',obstacleType:'ice',total:18}], moves:34, time:135, obstacleCount:18, obstacleType:'ice', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'wood',total:28},{type:'collect',animal:'frog',total:22}], moves:34, time:145, obstacleCount:28, obstacleType:'wood', animals:6 },
+    { missions:[{type:'collect',animal:'fox',total:38},{type:'collect',animal:'bunny',total:32},{type:'collect',animal:'panda',total:24}], moves:38, time:150, obstacleCount:18, obstacleType:'fire', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'ice',total:30},{type:'collect',animal:'bear',total:24}], moves:34, time:140, obstacleCount:30, obstacleType:'ice', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'fire',total:28},{type:'collect',animal:'cat',total:28},{type:'collect',animal:'frog',total:22}], moves:40, time:165, obstacleCount:28, obstacleType:'fire', animals:6 },
+
+    // 26-30关
+    { missions:[{type:'collect',animal:'panda',total:40},{type:'obstacle',obstacleType:'wood',total:20}], moves:34, time:140, obstacleCount:20, obstacleType:'wood', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'ice',total:32},{type:'collect',animal:'fox',total:26}], moves:35, time:145, obstacleCount:32, obstacleType:'ice', animals:6 },
+    { missions:[{type:'collect',animal:'bunny',total:42},{type:'collect',animal:'bear',total:34},{type:'obstacle',obstacleType:'fire',total:18}], moves:40, time:160, obstacleCount:18, obstacleType:'fire', animals:6 },
+    { missions:[{type:'obstacle',obstacleType:'wood',total:34},{type:'collect',animal:'cat',total:30}], moves:35, time:145, obstacleCount:34, obstacleType:'wood', animals:6 },
+    { missions:[{type:'collect',animal:'panda',total:45},{type:'obstacle',obstacleType:'ice',total:30},{type:'collect',animal:'frog',total:32}], moves:42, time:180, obstacleCount:30, obstacleType:'ice', animals:6 },
+  ];
+  const idx = Math.min(level - 1, configs.length - 1);
+  return configs[idx];
+}
+
+// ==================== 初始化关卡 ====================
+function initLevel(level) {
+  currentLevel = level;
+  levelConfig = getLevelConfig(level);
+  missions = levelConfig.missions.map(m => ({...m, current: 0}));
+  score = 0;
+  movesLeft = levelConfig.moves;
+  timeLeft = levelConfig.time;
+  selectedCell = null;
+  isAnimating = false;
+  dragStartCell = null;
+  isDragging = false;
+
+  const animals = ANIMALS.slice(0, levelConfig.animals);
+
+  // 生成棋盘
+  board = [];
+  obstacleBoard = [];
+  for (let r = 0; r < ROWS; r++) {
+    board[r] = [];
+    obstacleBoard[r] = [];
+    for (let c = 0; c < COLS; c++) {
+      board[r][c] = animals[Math.floor(Math.random() * animals.length)];
+      obstacleBoard[r][c] = null;
+    }
+  }
+
+  // 放置障碍物
+  if (levelConfig.obstacleCount > 0 && levelConfig.obstacleType) {
+    placeObstacles(levelConfig.obstacleCount, levelConfig.obstacleType);
+  }
+
+  // 确保初始没有匹配
+  let safety = 0;
+  while (findAllRawMatches().length > 0 && safety < 1000) {
+    safety++;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (hasMatchAt(r, c)) {
+          board[r][c] = animals[Math.floor(Math.random() * animals.length)];
+        }
+      }
+    }
+  }
+
+  document.getElementById('gameContainer').style.display = 'block';
+  updateUI();
+  renderBoard();
+  updateMissionDisplay();
+  startTimer();
+}
+
+function placeObstacles(count, type) {
+  const candidates = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const edgeWeight = (r === 0 || r === ROWS-1 || c === 0 || c === COLS-1) ? 3 : 1;
+      for (let i = 0; i < edgeWeight; i++) candidates.push({r, c});
+    }
+  }
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  const used = new Set();
+  for (const pos of candidates) {
+    const key = `${pos.r},${pos.c}`;
+    if (!used.has(key)) {
+      used.add(key);
+      obstacleBoard[pos.r][pos.c] = type;
+      if (used.size >= count) break;
+    }
+  }
+}
+
+// 获取格子实际动物类型（忽略道具包装）
+function getAnimalAt(r, c) {
+  const cell = board[r][c];
+  if (!cell) return null;
+  if (typeof cell === 'object' && cell.type === 'powerup') return cell.animal || null;
+  return cell;
+}
+
+function getRawCell(r, c) {
+  return board[r][c];
+}
+
+function hasMatchAt(r, c) {
+  const animal = getAnimalAt(r, c);
+  if (!animal || obstacleBoard[r][c]) return false;
+  let hCount = 1, cc = c - 1;
+  while (cc >= 0 && getAnimalAt(r, cc) === animal && !obstacleBoard[r][cc]) { hCount++; cc--; }
+  cc = c + 1;
+  while (cc < COLS && getAnimalAt(r, cc) === animal && !obstacleBoard[r][cc]) { hCount++; cc++; }
+  if (hCount >= 3) return true;
+  let vCount = 1, rr = r - 1;
+  while (rr >= 0 && getAnimalAt(rr, c) === animal && !obstacleBoard[rr][c]) { vCount++; rr--; }
+  rr = r + 1;
+  while (rr < ROWS && getAnimalAt(rr, c) === animal && !obstacleBoard[rr][c]) { vCount++; rr++; }
+  return vCount >= 3;
+}
+
+// ==================== 查找所有匹配（含道具检测） ====================
+function findAllRawMatches() {
+  const matched = new Set();
+  // 水平
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS - 2; c++) {
+      const a = getAnimalAt(r, c);
+      if (a && !obstacleBoard[r][c] && a === getAnimalAt(r, c+1) && a === getAnimalAt(r, c+2)) {
+        let end = c + 2;
+        while (end + 1 < COLS && getAnimalAt(r, end+1) === a && !obstacleBoard[r][end+1]) end++;
+        for (let i = c; i <= end; i++) matched.add(`${r},${i}`);
+      }
+    }
+  }
+  // 垂直
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS - 2; r++) {
+      const a = getAnimalAt(r, c);
+      if (a && !obstacleBoard[r][c] && a === getAnimalAt(r+1, c) && a === getAnimalAt(r+2, c)) {
+        let end = r + 2;
+        while (end + 1 < ROWS && getAnimalAt(end+1, c) === a && !obstacleBoard[end+1][c]) end++;
+        for (let i = r; i <= end; i++) matched.add(`${i},${c}`);
+      }
+    }
+  }
+  return Array.from(matched).map(s => {
+    const [r, c] = s.split(',').map(Number);
+    return {row: r, col: c};
+  });
+}
+
+// 分析匹配形状并决定是否生成道具
+function analyzeMatchShapes(matches) {
+  const matchSet = new Set(matches.map(m => `${m.row},${m.col}`));
+  const powerups = []; // [{row, col, type: 'plane'|'rocket_h'|'rocket_v'|'bomb', animal}]
+  const processed = new Set();
+
+  for (const m of matches) {
+    const key = `${m.row},${m.col}`;
+    if (processed.has(key)) continue;
+
+    const animal = getAnimalAt(m.row, m.col);
+    if (!animal) continue;
+
+    // 水平连续
+    let hCells = [];
+    let cc = m.col;
+    while (cc < COLS && matchSet.has(`${m.row},${cc}`) && getAnimalAt(m.row, cc) === animal) { hCells.push(`${m.row},${cc}`); cc++; }
+
+    // 垂直连续
+    let vCells = [];
+    let rr = m.row;
+    while (rr < ROWS && matchSet.has(`${rr},${m.col}`) && getAnimalAt(rr, m.col) === animal) { vCells.push(`${rr},${m.col}`); rr++; }
+
+    const hLen = hCells.length;
+    const vLen = vCells.length;
+
+    // 十字型 (横>=3 且 竖>=3) -> 彩虹花
+    if (hLen >= 3 && vLen >= 3) {
+      const centerR = m.row, centerC = m.col;
+      const centerKey = `${centerR},${centerC}`;
+      if (!processed.has(centerKey)) {
+        powerups.push({row: centerR, col: centerC, type: 'rainbow', animal: animal});
+        processed.add(centerKey);
+      }
+      hCells.forEach(k => processed.add(k));
+      vCells.forEach(k => processed.add(k));
+      continue;
+    }
+
+    // T型/L型 (横>=3 且 竖>=2) 或 (竖>=3 且 横>=2) 或 (任意方向有一边>=3且另一边>=2) -> 炸弹
+    // 放宽：只要该位置的水平方向>=2且垂直方向>=2，且总长度>=5，即可触发T型炸弹
+    if ((hLen >= 3 && vLen >= 2) || (vLen >= 3 && hLen >= 2) || (hLen >= 2 && vLen >= 2 && hLen + vLen >= 5)) {
+      const centerR = m.row, centerC = m.col;
+      const centerKey = `${centerR},${centerC}`;
+      if (!processed.has(centerKey)) {
+        powerups.push({row: centerR, col: centerC, type: 'bomb', animal: animal});
+        processed.add(centerKey);
+      }
+      hCells.forEach(k => processed.add(k));
+      vCells.forEach(k => processed.add(k));
+      continue;
+    }
+
+    // 5连竖 -> 垂直火箭
+    if (vLen >= 5) {
+      const midR = m.row + Math.floor(vLen / 2);
+      const vk = `${midR},${m.col}`;
+      if (!processed.has(vk)) {
+        powerups.push({row: midR, col: m.col, type: 'rocket_v', animal: animal});
+        processed.add(vk);
+      }
+      vCells.forEach(k => processed.add(k));
+    }
+
+    // 4连竖 -> 飞机
+    if (vLen === 4) {
+      const midR = m.row + 1;
+      const vk = `${midR},${m.col}`;
+      if (!processed.has(vk)) {
+        powerups.push({row: midR, col: m.col, type: 'plane', animal: animal});
+        processed.add(vk);
+      }
+      vCells.forEach(k => processed.add(k));
+    }
+
+    // 5连横 -> 水平火箭
+    if (hLen >= 5) {
+      const midC = m.col + Math.floor(hLen / 2);
+      const hk = `${m.row},${midC}`;
+      if (!processed.has(hk)) {
+        powerups.push({row: m.row, col: midC, type: 'rocket_h', animal: animal});
+        processed.add(hk);
+      }
+      hCells.forEach(k => processed.add(k));
+    }
+
+    // 4连横 -> 飞机
+    if (hLen === 4) {
+      const midC = m.col + 1;
+      const hk = `${m.row},${midC}`;
+      if (!processed.has(hk)) {
+        powerups.push({row: m.row, col: midC, type: 'plane', animal: animal});
+        processed.add(hk);
+      }
+      hCells.forEach(k => processed.add(k));
+    }
+
+    // 标记已处理
+    hCells.forEach(k => processed.add(k));
+    vCells.forEach(k => processed.add(k));
+  }
+
+  return powerups;
+}
+
+// ==================== 处理消除 ====================
+function processMatches() {
+  const matches = findAllRawMatches();
+  if (matches.length === 0) return { matched: false, powerups: [] };
+
+  const matchSet = new Set(matches.map(m => `${m.row},${m.col}`));
+  const powerups = analyzeMatchShapes(matches);
+
+  // 统计消除
+  const animalCount = {};
+  const obstaclesBroken = new Set();
+
+  matches.forEach(({row, col}) => {
+    const animal = getAnimalAt(row, col);
+    if (animal) {
+      animalCount[animal] = (animalCount[animal] || 0) + 1;
+    }
+    // 检查相邻障碍物
+    for (const [nr, nc] of [[row-1,col],[row+1,col],[row,col-1],[row,col+1]]) {
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && obstacleBoard[nr][nc]) {
+        obstaclesBroken.add(`${nr},${nc}`);
+      }
+    }
+  });
+
+  // 更新任务
+  missions.forEach(mission => {
+    if (mission.type === 'collect' && animalCount[mission.animal]) {
+      mission.current = Math.min(mission.total, mission.current + animalCount[mission.animal]);
+    }
+    if (mission.type === 'obstacle') {
+      let matched = 0;
+      obstaclesBroken.forEach(key => {
+        const [r, c] = key.split(',').map(Number);
+        if (obstacleBoard[r][c] === mission.obstacleType) matched++;
+      });
+      mission.current = Math.min(mission.total, mission.current + matched);
+    }
+  });
+
+  // 加分
+  score += matches.length * 10 + obstaclesBroken.size * 15;
+
+  // 消除匹配元素（道具位置保留给道具）
+  const powerupPositions = new Set(powerups.map(p => `${p.row},${p.col}`));
+  matches.forEach(({row, col}) => {
+    if (!powerupPositions.has(`${row},${col}`)) {
+      board[row][col] = null;
+    }
+  });
+
+  // 放置道具
+  powerups.forEach(p => {
+    board[p.row][p.col] = { type: 'powerup', powerup: p.type, animal: p.animal };
+  });
+
+  // 打破相邻障碍物
+  obstaclesBroken.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    obstacleBoard[r][c] = null;
+  });
+
+  return { matched: true, powerups };
+}
+
+// ==================== 下落填充 ====================
+function dropAndFill() {
+  const animals = ANIMALS.slice(0, levelConfig.animals);
+  for (let c = 0; c < COLS; c++) {
+    let writeRow = ROWS - 1;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (board[r][c] !== null) {
+        if (r !== writeRow) {
+          board[writeRow][c] = board[r][c];
+          board[r][c] = null;
+        }
+        writeRow--;
+      }
+    }
+    for (let r = writeRow; r >= 0; r--) {
+      board[r][c] = animals[Math.floor(Math.random() * animals.length)];
+    }
+  }
+}
+
+// ==================== 道具效果 ====================
+async function activatePowerup(row, col) {
+  const cell = board[row][col];
+  if (!cell || typeof cell !== 'object' || cell.type !== 'powerup') return;
+
+  const powerup = cell.powerup;
+  const animal = cell.animal;
+  board[row][col] = null;
+
+  const cellsToRemove = [];
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+
+  if (powerup === 'plane') {
+    // 飞机：飞到随机格子消除
+    const validCells = [];
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (!obstacleBoard[r][c] && board[r][c] !== null && !(r === row && c === col))
+          validCells.push({r, c});
+    if (validCells.length > 0) {
+      const target = validCells[Math.floor(Math.random() * validCells.length)];
+      await animatePlane(row, col, target.r, target.c, boardRect);
+      cellsToRemove.push({row: target.r, col: target.c});
+    }
+  } else if (powerup === 'rocket_h') {
+    // 水平火箭：消除整行
+    await animateRocket(row, col, 'h', boardRect);
+    for (let c = 0; c < COLS; c++) {
+      if (board[row][c] !== null) cellsToRemove.push({row, col: c});
+    }
+  } else if (powerup === 'rocket_v') {
+    // 垂直火箭：消除整列
+    await animateRocket(row, col, 'v', boardRect);
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][col] !== null) cellsToRemove.push({row: r, col});
+    }
+  } else if (powerup === 'bomb') {
+    // 炸弹：消除九宫格
+    await animateBomb(row, col, boardRect);
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const nr = row + dr, nc = col + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+          cellsToRemove.push({row: nr, col: nc});
+        }
+      }
+    }
+  } else if (powerup === 'rainbow') {
+    // 彩虹花单独激活不处理，需要通过交换触发
+    board[row][col] = { type: 'powerup', powerup: 'rainbow', animal: animal };
+    return;
+  }
+
+  // 执行消除
+  const animalCount = {};
+  const obstaclesBroken = new Set();
+  cellsToRemove.forEach(({row: rr, col: cc}) => {
+    if (board[rr][cc] !== null) {
+      const a = getAnimalAt(rr, cc);
+      if (a) animalCount[a] = (animalCount[a] || 0) + 1;
+      board[rr][cc] = null;
+    }
+    for (const [nr, nc] of [[rr-1,cc],[rr+1,cc],[rr,cc-1],[rr,cc+1]]) {
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && obstacleBoard[nr][nc]) {
+        obstaclesBroken.add(`${nr},${nc}`);
+      }
+    }
+  });
+
+  // 更新任务
+  missions.forEach(mission => {
+    if (mission.type === 'collect' && animalCount[mission.animal]) {
+      mission.current = Math.min(mission.total, mission.current + animalCount[mission.animal]);
+    }
+    if (mission.type === 'obstacle') {
+      let matched = 0;
+      obstaclesBroken.forEach(key => {
+        const [r, c] = key.split(',').map(Number);
+        if (obstacleBoard[r][c] === mission.obstacleType) matched++;
+      });
+      mission.current = Math.min(mission.total, mission.current + matched);
+    }
+  });
+
+  obstaclesBroken.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    obstacleBoard[r][c] = null;
+  });
+
+  score += cellsToRemove.length * 10 + obstaclesBroken.size * 15;
+  updateMissionDisplay();
+  updateUI();
+  renderBoard();
+
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+
+  // 连锁消除
+  await cascadeMatches();
+}
+
+// ==================== 道具动画 ====================
+async function animatePlane(fromR, fromC, toR, toC, boardRect) {
+  const cellSize = boardRect.width / COLS;
+  const fromX = boardRect.left + fromC * cellSize + cellSize / 2;
+  const fromY = boardRect.top + fromR * cellSize + cellSize / 2;
+  const toX = boardRect.left + toC * cellSize + cellSize / 2;
+  const toY = boardRect.top + toR * cellSize + cellSize / 2;
+
+  const plane = document.createElement('div');
+  plane.className = 'flying-prop';
+  plane.textContent = '✈️';
+  plane.style.left = fromX + 'px';
+  plane.style.top = fromY + 'px';
+  plane.style.transform = 'translate(-50%, -50%)';
+  document.body.appendChild(plane);
+
+  // 目标格子提前高亮闪烁
+  const targetCell = document.querySelector(`.cell[data-row="${toR}"][data-col="${toC}"]`);
+  let highlightInterval;
+  if (targetCell) {
+    let on = true;
+    highlightInterval = setInterval(() => {
+      targetCell.style.boxShadow = on ? '0 0 25px #fff, 0 0 50px rgba(255,255,255,0.9)' : '0 0 15px #FFD700, 0 0 30px rgba(255,215,0,0.6)';
+      targetCell.style.background = on ? '#fff' : '#FFD700';
+      targetCell.style.transform = on ? 'scale(1.15)' : 'scale(1.05)';
+      on = !on;
+    }, 120);
+  }
+
+  // 飞行路径（弧线）
+  const midX = (fromX + toX) / 2;
+  const midY = Math.min(fromY, toY) - 80;
+  const path = [
+    { x: fromX, y: fromY },
+    { x: midX, y: midY },
+    { x: toX, y: toY }
+  ];
+
+  await animateAlongPath(plane, path, 700);
+  plane.remove();
+
+  // 停止高亮并重置
+  if (highlightInterval) clearInterval(highlightInterval);
+  if (targetCell) {
+    targetCell.style.boxShadow = '0 0 25px #fff, 0 0 50px rgba(255,255,255,0.9)';
+    targetCell.style.background = '#fff';
+    targetCell.style.transform = 'scale(1.2)';
+    await sleep(200);
+    targetCell.style.boxShadow = '';
+    targetCell.style.background = '';
+    targetCell.style.transform = '';
+  }
+}
+
+async function animateRocket(row, col, direction, boardRect) {
+  const cellSize = boardRect.width / COLS;
+  const startX = boardRect.left + col * cellSize + cellSize / 2;
+  const startY = boardRect.top + row * cellSize + cellSize / 2;
+
+  const rocket = document.createElement('div');
+  rocket.className = 'flying-prop';
+  rocket.textContent = '🚀';
+  rocket.style.left = startX + 'px';
+  rocket.style.top = startY + 'px';
+  rocket.style.transform = 'translate(-50%, -50%)';
+  if (direction === 'h') rocket.style.transform += ' rotate(90deg)';
+  document.body.appendChild(rocket);
+
+  // 尾迹
+  const trailInterval = setInterval(() => {
+    const rect = rocket.getBoundingClientRect();
+    const trail = document.createElement('div');
+    trail.className = 'rocket-trail';
+    trail.style.left = (rect.left + rect.width / 2) + 'px';
+    trail.style.top = (rect.top + rect.height / 2) + 'px';
+    document.body.appendChild(trail);
+    setTimeout(() => trail.remove(), 500);
+  }, 30);
+
+  const endX = direction === 'h' ? boardRect.left + (COLS - 0.5) * cellSize : startX;
+  const endY = direction === 'v' ? boardRect.top + (ROWS - 0.5) * cellSize : startY;
+
+  await animateElement(rocket, endX, endY, 500);
+  clearInterval(trailInterval);
+  rocket.remove();
+
+  // 整行/列闪烁
+  if (direction === 'h') {
+    for (let c = 0; c < COLS; c++) flashCell(row, c, 150);
+  } else {
+    for (let r = 0; r < ROWS; r++) flashCell(r, col, 150);
+  }
+  await sleep(180);
+}
+
+async function animateBomb(row, col, boardRect) {
+  const cellSize = boardRect.width / COLS;
+  const cx = boardRect.left + col * cellSize + cellSize / 2;
+  const cy = boardRect.top + row * cellSize + cellSize / 2;
+
+  // 爆炸环
+  for (let i = 0; i < 2; i++) {
+    const ring = document.createElement('div');
+    ring.className = 'explosion-ring';
+    ring.style.left = (cx - 50) + 'px';
+    ring.style.top = (cy - 50) + 'px';
+    ring.style.animationDelay = (i * 0.1) + 's';
+    document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 600);
+  }
+
+  // 九宫格闪烁
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const nr = row + dr, nc = col + dc;
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+        flashCell(nr, nc, 150);
+      }
+    }
+  }
+  await sleep(300);
+}
+
+// ==================== 道具组合特效 ====================
+// 通用：执行格子消除（board更新+任务+分数）
+function executeCellRemoval(cellsToRemove) {
+  const animalCount = {};
+  const obstaclesBroken = new Set();
+  cellsToRemove.forEach(key => {
+    const [rr, cc] = key.split(',').map(Number);
+    if (board[rr][cc] !== null) {
+      const a = getAnimalAt(rr, cc);
+      if (a) animalCount[a] = (animalCount[a] || 0) + 1;
+      board[rr][cc] = null;
+    }
+    for (const [nr, nc] of [[rr-1,cc],[rr+1,cc],[rr,cc-1],[rr,cc+1]]) {
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && obstacleBoard[nr][nc]) {
+        obstaclesBroken.add(`${nr},${nc}`);
+      }
+    }
+  });
+
+  // 更新任务
+  missions.forEach(mission => {
+    if (mission.type === 'collect' && animalCount[mission.animal]) {
+      mission.current = Math.min(mission.total, mission.current + animalCount[mission.animal]);
+    }
+    if (mission.type === 'obstacle') {
+      let matched = 0;
+      obstaclesBroken.forEach(key => {
+        const [r, c] = key.split(',').map(Number);
+        if (obstacleBoard[r][c] === mission.obstacleType) matched++;
+      });
+      mission.current = Math.min(mission.total, mission.current + matched);
+    }
+  });
+
+  obstaclesBroken.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    obstacleBoard[r][c] = null;
+  });
+
+  score += cellsToRemove.size * 10 + obstaclesBroken.size * 15;
+  updateMissionDisplay();
+  updateUI();
+  renderBoard();
+}
+
+// 两个飞机互换 -> 炸弹特效（两个3x3范围合并）
+async function triggerDoubleBomb(r1, c1, r2, c2) {
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+  const cellsToRemove = new Set();
+
+  // 收集两个炸弹的九宫格范围
+  for (const [row, col] of [[r1, c1], [r2, c2]]) {
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const nr = row + dr, nc = col + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+          cellsToRemove.add(`${nr},${nc}`);
+        }
+      }
+    }
+  }
+
+  // 动画：两个炸弹同时爆炸
+  for (const [row, col] of [[r1, c1], [r2, c2]]) {
+    const cellSize = boardRect.width / COLS;
+    const cx = boardRect.left + col * cellSize + cellSize / 2;
+    const cy = boardRect.top + row * cellSize + cellSize / 2;
+    for (let i = 0; i < 2; i++) {
+      const ring = document.createElement('div');
+      ring.className = 'explosion-ring';
+      ring.style.left = (cx - 50) + 'px';
+      ring.style.top = (cy - 50) + 'px';
+      ring.style.animationDelay = (i * 0.1) + 's';
+      document.body.appendChild(ring);
+      setTimeout(() => ring.remove(), 600);
+    }
+  }
+
+  // 闪烁所有消除的格子
+  cellsToRemove.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    flashCell(r, c, 200);
+  });
+  await sleep(350);
+
+  // 执行消除
+  executeCellRemoval(cellsToRemove);
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+}
+
+// 两个火箭互换 -> 消除当前行和当前列
+async function triggerDoubleRocket(r1, c1, r2, c2) {
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+  const cellsToRemove = new Set();
+
+  // 收集火箭1的行和列
+  for (let c = 0; c < COLS; c++) cellsToRemove.add(`${r1},${c}`);
+  for (let r = 0; r < ROWS; r++) cellsToRemove.add(`${r},${c1}`);
+
+  // 收集火箭2的行和列
+  for (let c = 0; c < COLS; c++) cellsToRemove.add(`${r2},${c}`);
+  for (let r = 0; r < ROWS; r++) cellsToRemove.add(`${r},${c2}`);
+
+  // 动画：两个火箭同时飞行
+  await Promise.all([
+    animateRocketRow(r1, c1, boardRect),
+    animateRocketRow(r2, c2, boardRect)
+  ]);
+
+  // 执行消除
+  executeCellRemoval(cellsToRemove);
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+}
+
+// 飞机+火箭互换 -> 随机消除一行或一列
+async function triggerRandomLine(r1, c1, r2, c2) {
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+  const cellsToRemove = new Set();
+
+  // 随机选择：消除一行或一列
+  const isRow = Math.random() < 0.5;
+  let lineR, lineC;
+  if (isRow) {
+    lineR = Math.floor(Math.random() * ROWS);
+    for (let c = 0; c < COLS; c++) cellsToRemove.add(`${lineR},${c}`);
+  } else {
+    lineC = Math.floor(Math.random() * COLS);
+    for (let r = 0; r < ROWS; r++) cellsToRemove.add(`${r},${lineC}`);
+  }
+
+  // 动画：飞机飞到随机位置
+  const cellSize = boardRect.width / COLS;
+  const startX = boardRect.left + c1 * cellSize + cellSize / 2;
+  const startY = boardRect.top + r1 * cellSize + cellSize / 2;
+  const targetX = isRow ? boardRect.left + Math.floor(COLS / 2) * cellSize + cellSize / 2 : boardRect.left + lineC * cellSize + cellSize / 2;
+  const targetY = isRow ? boardRect.top + lineR * cellSize + cellSize / 2 : boardRect.top + Math.floor(ROWS / 2) * cellSize + cellSize / 2;
+
+  const plane = document.createElement('div');
+  plane.className = 'flying-prop';
+  plane.textContent = '✈️';
+  plane.style.left = startX + 'px';
+  plane.style.top = startY + 'px';
+  plane.style.transform = 'translate(-50%, -50%)';
+  document.body.appendChild(plane);
+
+  await animateElement(plane, targetX, targetY, 500);
+  plane.remove();
+
+  // 火箭动画
+  const rocket = document.createElement('div');
+  rocket.className = 'flying-prop';
+  rocket.textContent = '🚀';
+  if (isRow) {
+    rocket.style.left = boardRect.left + 'px';
+    rocket.style.top = (boardRect.top + lineR * cellSize + cellSize / 2) + 'px';
+    rocket.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+    document.body.appendChild(rocket);
+    await animateElement(rocket, boardRect.left + (COLS - 0.5) * cellSize, parseFloat(rocket.style.top), 400);
+  } else {
+    rocket.style.left = (boardRect.left + lineC * cellSize + cellSize / 2) + 'px';
+    rocket.style.top = boardRect.top + 'px';
+    rocket.style.transform = 'translate(-50%, -50%)';
+    document.body.appendChild(rocket);
+    await animateElement(rocket, parseFloat(rocket.style.left), boardRect.top + (ROWS - 0.5) * cellSize, 400);
+  }
+  rocket.remove();
+
+  // 闪烁
+  cellsToRemove.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    flashCell(r, c, 150);
+  });
+  await sleep(250);
+
+  // 执行消除
+  executeCellRemoval(cellsToRemove);
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+}
+
+// 飞机+炸弹互换 -> 随机消除一个九宫格
+async function triggerRandomBomb(r1, c1, r2, c2) {
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+  const cellsToRemove = new Set();
+
+  // 随机九宫格中心
+  const centerR = Math.floor(Math.random() * ROWS);
+  const centerC = Math.floor(Math.random() * COLS);
+
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const nr = centerR + dr, nc = centerC + dc;
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+        cellsToRemove.add(`${nr},${nc}`);
+      }
+    }
+  }
+
+  // 动画：飞机飞过去
+  const cellSize = boardRect.width / COLS;
+  const startX = boardRect.left + c1 * cellSize + cellSize / 2;
+  const startY = boardRect.top + r1 * cellSize + cellSize / 2;
+  const targetX = boardRect.left + centerC * cellSize + cellSize / 2;
+  const targetY = boardRect.top + centerR * cellSize + cellSize / 2;
+
+  const plane = document.createElement('div');
+  plane.className = 'flying-prop';
+  plane.textContent = '✈️';
+  plane.style.left = startX + 'px';
+  plane.style.top = startY + 'px';
+  plane.style.transform = 'translate(-50%, -50%)';
+  document.body.appendChild(plane);
+  await animateElement(plane, targetX, targetY, 500);
+  plane.remove();
+
+  // 爆炸环
+  for (let i = 0; i < 2; i++) {
+    const ring = document.createElement('div');
+    ring.className = 'explosion-ring';
+    ring.style.left = (targetX - 50) + 'px';
+    ring.style.top = (targetY - 50) + 'px';
+    ring.style.animationDelay = (i * 0.1) + 's';
+    document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 600);
+  }
+
+  // 闪烁九宫格
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const nr = centerR + dr, nc = centerC + dc;
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+        flashCell(nr, nc, 150);
+      }
+    }
+  }
+  await sleep(300);
+
+  // 执行消除
+  executeCellRemoval(cellsToRemove);
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+}
+
+// 彩虹花+道具 -> 随机掉落对应道具
+async function triggerRainbowDropPowerup(otherType) {
+  // otherType: 'plane' / 'rocket_h' / 'rocket_v' / 'bomb'
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+
+  // 随机掉落数量：2-4个
+  const count = 2 + Math.floor(Math.random() * 3);
+  const validCells = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (!obstacleBoard[r][c] && board[r][c] === null) {
+        validCells.push({r, c});
+      }
+    }
+  }
+
+  // 洗牌选位置
+  const shuffled = validCells.sort(() => Math.random() - 0.5);
+  const dropCells = shuffled.slice(0, Math.min(count, validCells.length));
+
+  // 动画：彩虹特效
+  const cellSize = boardRect.width / COLS;
+  for (const cell of dropCells) {
+    const cx = boardRect.left + cell.c * cellSize + cellSize / 2;
+    const cy = boardRect.top + cell.r * cellSize + cellSize / 2;
+    const sparkle = document.createElement('div');
+    sparkle.className = 'explosion-ring';
+    sparkle.style.left = (cx - 40) + 'px';
+    sparkle.style.top = (cy - 40) + 'px';
+    sparkle.style.borderColor = '#FF69B4';
+    sparkle.style.animationDuration = '0.4s';
+    document.body.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 500);
+  }
+
+  // 放置道具
+  const animalTypes = ['🐱','🐶','🐰','🐻','🐼','🐨','🐸','🦊'];
+  for (const cell of dropCells) {
+    const animal = animalTypes[Math.floor(Math.random() * animalTypes.length)];
+    board[cell.r][cell.c] = {
+      type: 'powerup',
+      powerup: otherType,
+      animal: animal
+    };
+  }
+
+  renderBoard();
+  await sleep(350);
+}
+
+// 火箭飞行行+列动画
+async function animateRocketRow(row, col, boardRect) {
+  const cellSize = boardRect.width / COLS;
+
+  // 水平火箭
+  const rocketH = document.createElement('div');
+  rocketH.className = 'flying-prop';
+  rocketH.textContent = '🚀';
+  rocketH.style.left = boardRect.left + 'px';
+  rocketH.style.top = (boardRect.top + row * cellSize + cellSize / 2) + 'px';
+  rocketH.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+  document.body.appendChild(rocketH);
+
+  // 垂直火箭
+  const rocketV = document.createElement('div');
+  rocketV.className = 'flying-prop';
+  rocketV.textContent = '🚀';
+  rocketV.style.left = (boardRect.left + col * cellSize + cellSize / 2) + 'px';
+  rocketV.style.top = boardRect.top + 'px';
+  rocketV.style.transform = 'translate(-50%, -50%)';
+  document.body.appendChild(rocketV);
+
+  const endX = boardRect.left + (COLS - 0.5) * cellSize;
+  const endY = boardRect.top + (ROWS - 0.5) * cellSize;
+
+  // 尾迹
+  const trailInterval = setInterval(() => {
+    const rectH = rocketH.getBoundingClientRect();
+    const rectV = rocketV.getBoundingClientRect();
+    [rectH, rectV].forEach(rect => {
+      const trail = document.createElement('div');
+      trail.className = 'rocket-trail';
+      trail.style.left = (rect.left + rect.width / 2) + 'px';
+      trail.style.top = (rect.top + rect.height / 2) + 'px';
+      document.body.appendChild(trail);
+      setTimeout(() => trail.remove(), 500);
+    });
+  }, 30);
+
+  await Promise.all([
+    animateElement(rocketH, endX, parseFloat(rocketH.style.top), 400),
+    animateElement(rocketV, parseFloat(rocketV.style.left), endY, 400)
+  ]);
+
+  clearInterval(trailInterval);
+  rocketH.remove();
+  rocketV.remove();
+
+  // 闪烁整行和整列
+  for (let c = 0; c < COLS; c++) flashCell(row, c, 120);
+  for (let r = 0; r < ROWS; r++) flashCell(r, col, 120);
+  await sleep(150);
+}
+
+// 两个炸弹互换 -> 全屏消除
+async function triggerFullClear(r1, c1, r2, c2) {
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+
+  // 动画：两个炸弹同时爆炸
+  for (const [row, col] of [[r1, c1], [r2, c2]]) {
+    const cellSize = boardRect.width / COLS;
+    const cx = boardRect.left + col * cellSize + cellSize / 2;
+    const cy = boardRect.top + row * cellSize + cellSize / 2;
+    for (let i = 0; i < 3; i++) {
+      const ring = document.createElement('div');
+      ring.className = 'explosion-ring';
+      ring.style.left = (cx - 60) + 'px';
+      ring.style.top = (cy - 60) + 'px';
+      ring.style.animationDelay = (i * 0.1) + 's';
+      ring.style.borderColor = '#FFD700';
+      document.body.appendChild(ring);
+      setTimeout(() => ring.remove(), 800);
+    }
+  }
+
+  // 闪烁所有格子
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      flashCell(r, c, 250);
+    }
+  }
+  await sleep(400);
+
+  // 消除所有格子
+  const cellsToRemove = new Set();
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c] !== null) cellsToRemove.add(`${r},${c}`);
+    }
+  }
+
+  executeCellRemoval(cellsToRemove);
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+}
+
+// 彩虹花 -> 消除该动物的所有格子
+async function triggerRainbowClear(targetAnimal) {
+  const cellsToRemove = new Set();
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c] !== null && getAnimalAt(r, c) === targetAnimal) {
+        cellsToRemove.add(`${r},${c}`);
+      }
+    }
+  }
+
+  // 闪烁动画
+  cellsToRemove.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    flashCell(r, c, 400);
+  });
+  await sleep(500);
+
+  // 执行消除
+  executeCellRemoval(cellsToRemove);
+  dropAndFill();
+  renderBoard();
+  await sleep(100);
+}
+
+function animateAlongPath(el, path, duration) {
+  return new Promise(resolve => {
+    const startTime = performance.now();
+    function step(time) {
+      const elapsed = time - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // 贝塞尔曲线插值
+      const seg = t;
+      const x = (1-seg)*(1-seg)*path[0].x + 2*(1-seg)*seg*path[1].x + seg*seg*path[2].x;
+      const y = (1-seg)*(1-seg)*path[0].y + 2*(1-seg)*seg*path[1].y + seg*seg*path[2].y;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      // 旋转朝向目标
+      if (t < 0.9) {
+        const dx = 2*(1-seg)*(path[1].x-path[0].x) + 2*seg*(path[2].x-path[1].x);
+        const dy = 2*(1-seg)*(path[1].y-path[0].y) + 2*seg*(path[2].y-path[1].y);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+        el.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+      }
+      if (t < 1) requestAnimationFrame(step);
+      else resolve();
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+function animateElement(el, toX, toY, duration) {
+  return new Promise(resolve => {
+    const startX = parseFloat(el.style.left);
+    const startY = parseFloat(el.style.top);
+    const startTime = performance.now();
+    function step(time) {
+      const t = Math.min((time - startTime) / duration, 1);
+      const eased = t * (2 - t);
+      el.style.left = (startX + (toX - startX) * eased) + 'px';
+      el.style.top = (startY + (toY - startY) * eased) + 'px';
+      if (t < 1) requestAnimationFrame(step);
+      else resolve();
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+function flashCell(row, col, duration) {
+  const cellEl = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+  if (cellEl) {
+    cellEl.style.boxShadow = '0 0 25px #FFD700, 0 0 50px rgba(255,215,0,0.8)';
+    cellEl.style.background = '#FFD700';
+    setTimeout(() => {
+      cellEl.style.boxShadow = '';
+      cellEl.style.background = '';
+    }, duration);
+  }
+}
+
+// ==================== 连锁消除 ====================
+async function cascadeMatches() {
+  let result = processMatches();
+  let cascadeSafety = 0;
+  while (result.matched && cascadeSafety < 100) {
+    cascadeSafety++;
+    updateMissionDisplay();
+    updateUI();
+    renderBoard();
+    await animateMatchEffects(result);
+    dropAndFill();
+    renderBoard();
+    await sleep(40);
+    result = processMatches();
+  }
+  updateMissionDisplay();
+  updateUI();
+  renderBoard();
+}
+
+// 消除动画特效
+async function animateMatchEffects(result) {
+  const boardRect = document.getElementById('gameBoard').getBoundingClientRect();
+  const cellSize = boardRect.width / COLS;
+  const matchSet = new Set();
+
+  // 收集所有被消除的位置
+  if (result.matched) {
+    const matches = findAllRawMatches();
+    matches.forEach(m => matchSet.add(`${m.row},${m.col}`));
+  }
+
+  // 给每个匹配的格子添加弹跳动画
+  matchSet.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    const cellEl = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (cellEl && !cellEl.classList.contains('popping')) {
+      cellEl.classList.add('popping');
+      cellEl.classList.add('match-flash');
+      // 生成粒子
+      spawnParticles(r, c, cellSize, boardRect);
+      // 得分弹出
+      spawnScorePop(r, c, cellSize, boardRect);
+    }
+  });
+
+  // 障碍物破碎动画
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (!obstacleBoard[r][c]) {
+        // 检查是否被相邻消除影响（即将破碎）
+        for (const [nr, nc] of [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]) {
+          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && matchSet.has(`${nr},${nc}`)) {
+            const obsEl = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+            if (obsEl && obsEl.classList.contains(obstacleBoard[r] ? obstacleBoard[r]+'-cell' : '')) {
+              obsEl.classList.add('obstacle-breaking');
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  await sleep(180);
+}
+
+function spawnParticles(r, c, cellSize, boardRect) {
+  const cx = boardRect.left + c * cellSize + cellSize / 2;
+  const cy = boardRect.top + r * cellSize + cellSize / 2;
+  const emojis = ['✨','⭐','💫','🌟','💥','🎀'];
+  for (let i = 0; i < 5; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'match-particle';
+    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    particle.style.left = cx + 'px';
+    particle.style.top = cy + 'px';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 30 + Math.random() * 40;
+    particle.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+    particle.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 500);
+  }
+}
+
+function spawnScorePop(r, c, cellSize, boardRect) {
+  const cx = boardRect.left + c * cellSize + cellSize / 2;
+  const cy = boardRect.top + r * cellSize + cellSize / 2;
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.textContent = '+10';
+  pop.style.left = cx + 'px';
+  pop.style.top = cy + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 700);
+}
+
+// ==================== 检查胜负 ====================
+function checkWin() {
+  return missions.every(m => m.current >= m.total);
+}
+function checkLose() {
+  return movesLeft <= 0 || timeLeft <= 0;
+}
+
+// ==================== 交换逻辑 ====================
+function isAdjacent(r1, c1, r2, c2) {
+  return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+}
+
+function isPowerup(r, c) {
+  const cell = board[r][c];
+  return cell && typeof cell === 'object' && cell.type === 'powerup';
+}
+
+function getPowerupType(r, c) {
+  const cell = board[r][c];
+  if (cell && typeof cell === 'object' && cell.type === 'powerup') return cell.powerup;
+  return null;
+}
+
+async function trySwap(r1, c1, r2, c2) {
+  if (isAnimating) return;
+  if (!isAdjacent(r1, c1, r2, c2)) return;
+  if (obstacleBoard[r1][c1] || obstacleBoard[r2][c2]) return;
+
+  const pw1 = isPowerup(r1, c1);
+  const pw2 = isPowerup(r2, c2);
+
+  // 两个道具互换：触发特殊效果
+  if (pw1 && pw2) {
+    const type1 = getPowerupType(r1, c1);
+    const type2 = getPowerupType(r2, c2);
+    const isPlane1 = type1 === 'plane';
+    const isPlane2 = type2 === 'plane';
+    const isRocket1 = type1 === 'rocket_h' || type1 === 'rocket_v';
+    const isRocket2 = type2 === 'rocket_h' || type2 === 'rocket_v';
+    const isBomb1 = type1 === 'bomb';
+    const isBomb2 = type2 === 'bomb';
+    const isRainbow1 = type1 === 'rainbow';
+    const isRainbow2 = type2 === 'rainbow';
+
+    // 两个炸弹互换 -> 全屏消除
+    if (isBomb1 && isBomb2) {
+      isAnimating = true;
+      selectedCell = null;
+      movesLeft--;
+      updateUI();
+      board[r1][c1] = null;
+      board[r2][c2] = null;
+      renderBoard();
+      await triggerFullClear(r1, c1, r2, c2);
+      await cascadeMatches();
+      if (checkWin()) { clearInterval(timerInterval); showWin(); }
+      else if (checkLose()) { clearInterval(timerInterval); await sleep(300); showLose(); }
+      isAnimating = false;
+      return;
+    }
+
+    // 两个飞机互换 -> 炸弹特效（两个3x3范围合并）
+    if (isPlane1 && isPlane2) {
+      isAnimating = true;
+      selectedCell = null;
+      movesLeft--;
+      updateUI();
+      board[r1][c1] = null;
+      board[r2][c2] = null;
+      renderBoard();
+      await triggerDoubleBomb(r1, c1, r2, c2);
+      await cascadeMatches();
+      if (checkWin()) { clearInterval(timerInterval); showWin(); }
+      else if (checkLose()) { clearInterval(timerInterval); await sleep(300); showLose(); }
+      isAnimating = false;
+      return;
+    }
+
+    // 两个火箭互换 -> 消除当前行和当前列（两个火箭的行和列都消除）
+    if (isRocket1 && isRocket2) {
+      isAnimating = true;
+      selectedCell = null;
+      movesLeft--;
+      updateUI();
+      board[r1][c1] = null;
+      board[r2][c2] = null;
+      renderBoard();
+      await triggerDoubleRocket(r1, c1, r2, c2);
+      await cascadeMatches();
+      if (checkWin()) { clearInterval(timerInterval); showWin(); }
+      else if (checkLose()) { clearInterval(timerInterval); await sleep(300); showLose(); }
+      isAnimating = false;
+      return;
+    }
+
+    // 飞机 + 火箭互换 -> 随机消除一行或一列
+    if ((isPlane1 && isRocket2) || (isRocket1 && isPlane2)) {
+      isAnimating = true;
+      selectedCell = null;
+      movesLeft--;
+      updateUI();
+      board[r1][c1] = null;
+      board[r2][c2] = null;
+      renderBoard();
+      await triggerRandomLine(r1, c1, r2, c2);
+      await cascadeMatches();
+      if (checkWin()) { clearInterval(timerInterval); showWin(); }
+      else if (checkLose()) { clearInterval(timerInterval); await sleep(300); showLose(); }
+      isAnimating = false;
+      return;
+    }
+
+    // 飞机 + 炸弹互换 -> 随机消除一个九宫格
+    if ((isPlane1 && isBomb2) || (isBomb1 && isPlane2)) {
+      isAnimating = true;
+      selectedCell = null;
+      movesLeft--;
+      updateUI();
+      board[r1][c1] = null;
+      board[r2][c2] = null;
+      renderBoard();
+      await triggerRandomBomb(r1, c1, r2, c2);
+      await cascadeMatches();
+      if (checkWin()) { clearInterval(timerInterval); showWin(); }
+      else if (checkLose()) { clearInterval(timerInterval); await sleep(300); showLose(); }
+      isAnimating = false;
+      return;
+    }
+
+    // 彩虹花 + 任意道具（飞机/火箭/炸弹）-> 随机掉落对应的道具
+    if (isRainbow1 || isRainbow2) {
+      const rainbowR = isRainbow1 ? r1 : r2;
+      const rainbowC = isRainbow1 ? c1 : c2;
+      const otherR = isRainbow1 ? r2 : r1;
+      const otherC = isRainbow1 ? c2 : c1;
+      const otherType = isRainbow1 ? type2 : type1;
+      const otherIsPowerup = isRainbow1 ? isPlane2 || isRocket2 || isBomb2 : isPlane1 || isRocket1 || isBomb1;
+      
+      isAnimating = true;
+      selectedCell = null;
+      movesLeft--;
+      updateUI();
+      board[rainbowR][rainbowC] = null;
+      board[otherR][otherC] = null;
+      renderBoard();
+      
+      if (otherIsPowerup) {
+        // 彩虹花+道具：随机掉落对应的道具
+        await triggerRainbowDropPowerup(otherType);
+      } else {
+        // 彩虹花+普通动物：消除该动物的所有格子
+        const targetAnimal = getAnimalAt(otherR, otherC);
+        if (targetAnimal) {
+          await triggerRainbowClear(targetAnimal);
+        }
+      }
+      await cascadeMatches();
+      if (checkWin()) { clearInterval(timerInterval); showWin(); }
+      else if (checkLose()) { clearInterval(timerInterval); await sleep(300); showLose(); }
+      isAnimating = false;
+      return;
+    }
+
+    // 炸弹 + 火箭 -> 正常交换（先交换，看有无匹配）
+    // 继续走下面的普通交换逻辑
+  }
+
+  isAnimating = true;
+  selectedCell = null;
+  [board[r1][c1], board[r2][c2]] = [board[r2][c2], board[r1][c1]];
+  renderBoard();
+
+  const matches = findAllRawMatches();
+  if (matches.length > 0) {
+    movesLeft--;
+    updateUI();
+    await cascadeMatches();
+    if (checkWin()) {
+      clearInterval(timerInterval);
+      showWin();
+    } else if (checkLose()) {
+      clearInterval(timerInterval);
+      await sleep(300);
+      showLose();
+    }
+  } else {
+    await sleep(200);
+    [board[r1][c1], board[r2][c2]] = [board[r2][c2], board[r1][c1]];
+    renderBoard();
+  }
+  isAnimating = false;
+}
+
+// ==================== 点击处理（支持道具点击） ====================
+function onCellClick(row, col) {
+  if (isAnimating) return;
+  if (isDragging) { isDragging = false; return; }
+
+  const cell = board[row][col];
+  const isPowerupCell = cell && typeof cell === 'object' && cell.type === 'powerup';
+
+  // 如果已选中另一个格子，且当前格子是道具或普通格子，尝试交换
+  if (selectedCell !== null && isAdjacent(selectedCell.row, selectedCell.col, row, col) && !obstacleBoard[row][col]) {
+    const sr = selectedCell.row, sc = selectedCell.col;
+    selectedCell = null;
+    renderBoard();
+    trySwap(sr, sc, row, col);
+    return;
+  }
+
+  // 如果是道具且没有选中其他格子，直接激活（彩虹花除外，必须交换）
+  if (isPowerupCell && selectedCell === null) {
+    const pwType = getPowerupType(row, col);
+    if (pwType === 'rainbow') {
+      // 彩虹花不能单独激活，需要和别的格子交换
+      selectedCell = {row, col};
+      renderBoard();
+      return;
+    }
+    selectedCell = null; renderBoard();
+    isAnimating = true;
+    movesLeft--;
+    updateUI();
+    activatePowerup(row, col).then(() => {
+      isAnimating = false;
+      if (checkWin()) {
+        clearInterval(timerInterval);
+        showWin();
+      } else if (checkLose()) {
+        clearInterval(timerInterval);
+        setTimeout(showLose, 300);
+      }
+    });
+    return;
+  }
+
+  if (obstacleBoard[row][col]) return;
+
+  if (selectedCell === null) {
+    selectedCell = {row, col};
+    renderBoard();
+  } else if (selectedCell.row === row && selectedCell.col === col) {
+    selectedCell = null;
+    renderBoard();
+  } else if (isAdjacent(selectedCell.row, selectedCell.col, row, col)) {
+    const sr = selectedCell.row, sc = selectedCell.col;
+    selectedCell = null;
+    renderBoard();
+    trySwap(sr, sc, row, col);
+  } else {
+    selectedCell = {row, col};
+    renderBoard();
+  }
+}
+
+// ==================== 拖拽处理 ====================
+function setupDragEvents() {
+  const boardEl = document.getElementById('gameBoard');
+
+  boardEl.addEventListener('mousedown', (e) => {
+    const cellEl = e.target.closest('.cell');
+    if (!cellEl) return;
+    const r = parseInt(cellEl.dataset.row);
+    const c = parseInt(cellEl.dataset.col);
+    if (isNaN(r) || isNaN(c)) return;
+    if (isAnimating) return;
+    if (obstacleBoard[r][c]) return;
+    dragStartCell = {row: r, col: c};
+    isDragging = false;
+    cellEl.classList.add('selected');
+  });
+
+  boardEl.addEventListener('mousemove', (e) => {
+    if (!dragStartCell) return;
+    const cellEl = document.elementFromPoint(e.clientX, e.clientY);
+    if (!cellEl || !cellEl.classList.contains('cell')) return;
+    const r = parseInt(cellEl.dataset.row);
+    const c = parseInt(cellEl.dataset.col);
+    if (isNaN(r) || isNaN(c)) return;
+    if (r === dragStartCell.row && c === dragStartCell.col) return;
+
+    isDragging = true;
+    // 高亮目标
+    document.querySelectorAll('.cell.drag-over').forEach(el => el.classList.remove('drag-over'));
+    if (isAdjacent(dragStartCell.row, dragStartCell.col, r, c)) {
+      cellEl.classList.add('drag-over');
+    }
+  });
+
+  boardEl.addEventListener('mouseup', (e) => {
+    if (!dragStartCell) return;
+    document.querySelectorAll('.cell.drag-over').forEach(el => el.classList.remove('drag-over'));
+    document.querySelectorAll('.cell.selected').forEach(el => el.classList.remove('selected'));
+
+    const cellEl = document.elementFromPoint(e.clientX, e.clientY);
+    if (cellEl && cellEl.classList.contains('cell') && isDragging) {
+      const r = parseInt(cellEl.dataset.row);
+      const c = parseInt(cellEl.dataset.col);
+      if (!isNaN(r) && !isNaN(c) && isAdjacent(dragStartCell.row, dragStartCell.col, r, c)) {
+        if (!obstacleBoard[dragStartCell.row][dragStartCell.col] && !obstacleBoard[r][c]) {
+          const sr = dragStartCell.row, sc = dragStartCell.col;
+          dragStartCell = null;
+          isDragging = false;
+          trySwap(sr, sc, r, c);
+          return;
+        }
+      }
+    }
+    dragStartCell = null;
+    isDragging = false;
+  });
+
+  // 触摸事件
+  boardEl.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    const cellEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!cellEl || !cellEl.classList.contains('cell')) return;
+    const r = parseInt(cellEl.dataset.row);
+    const c = parseInt(cellEl.dataset.col);
+    if (isNaN(r) || isNaN(c) || isAnimating) return;
+    if (obstacleBoard[r][c]) return;
+    dragStartCell = {row: r, col: c};
+    isDragging = false;
+    cellEl.classList.add('selected');
+    e.preventDefault();
+  }, {passive: false});
+
+  boardEl.addEventListener('touchmove', (e) => {
+    if (!dragStartCell) return;
+    const touch = e.touches[0];
+    const cellEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!cellEl || !cellEl.classList.contains('cell')) return;
+    const r = parseInt(cellEl.dataset.row);
+    const c = parseInt(cellEl.dataset.col);
+    if (isNaN(r) || isNaN(c)) return;
+    if (r === dragStartCell.row && c === dragStartCell.col) return;
+    isDragging = true;
+    document.querySelectorAll('.cell.drag-over').forEach(el => el.classList.remove('drag-over'));
+    if (isAdjacent(dragStartCell.row, dragStartCell.col, r, c)) {
+      cellEl.classList.add('drag-over');
+    }
+    e.preventDefault();
+  }, {passive: false});
+
+  boardEl.addEventListener('touchend', (e) => {
+    if (!dragStartCell) return;
+    document.querySelectorAll('.cell.drag-over').forEach(el => el.classList.remove('drag-over'));
+    document.querySelectorAll('.cell.selected').forEach(el => el.classList.remove('selected'));
+
+    const touch = e.changedTouches[0];
+    const cellEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (cellEl && cellEl.classList.contains('cell') && isDragging) {
+      const r = parseInt(cellEl.dataset.row);
+      const c = parseInt(cellEl.dataset.col);
+      if (!isNaN(r) && !isNaN(c) && isAdjacent(dragStartCell.row, dragStartCell.col, r, c)) {
+        if (!obstacleBoard[dragStartCell.row][dragStartCell.col] && !obstacleBoard[r][c]) {
+          const sr = dragStartCell.row, sc = dragStartCell.col;
+          dragStartCell = null;
+          isDragging = false;
+          trySwap(sr, sc, r, c);
+          return;
+        }
+      }
+    }
+    dragStartCell = null;
+    isDragging = false;
+  });
+}
+
+// ==================== 渲染 ====================
+function renderBoard() {
+  const boardEl = document.getElementById('gameBoard');
+  boardEl.innerHTML = '';
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+
+      // 障碍物
+      if (obstacleBoard[r][c]) {
+        cell.classList.add(obstacleBoard[r][c] + '-cell');
+        cell.addEventListener('click', () => onCellClick(r, c));
+        boardEl.appendChild(cell);
+        continue;
+      }
+
+      // 选中状态
+      if (selectedCell && selectedCell.row === r && selectedCell.col === c) {
+        cell.classList.add('selected');
+      }
+
+      const raw = board[r][c];
+      if (raw) {
+        if (typeof raw === 'object' && raw.type === 'powerup') {
+          // 道具：直接显示道具图案，不保留动物
+          const pwType = raw.powerup;
+          cell.classList.add('powerup-' + pwType);
+          cell.textContent = POWERUP_EMOJI[pwType];
+          cell.style.fontSize = 'clamp(22px, 5vw, 36px)';
+        } else if (typeof raw === 'string') {
+          // 普通动物
+          cell.style.background = ANIMAL_BG[raw];
+          cell.textContent = ANIMAL_EMOJI[raw];
+        }
+      }
+
+      cell.addEventListener('click', () => onCellClick(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function updateUI() {
+  document.getElementById('levelBadge').textContent = `第 ${currentLevel} 关`;
+  document.getElementById('scoreText').textContent = score;
+  document.getElementById('movesText').textContent = movesLeft;
+  document.getElementById('timerText').textContent = timeLeft;
+  const timerEl = document.getElementById('timerText');
+  timerEl.style.color = timeLeft <= 10 ? '#FF0000' : '';
+}
+
+function updateMissionDisplay() {
+  const listEl = document.getElementById('missionList');
+  listEl.innerHTML = missions.map(m => {
+    const completed = m.current >= m.total;
+    let iconHtml = '';
+    let label = '';
+    if (m.type === 'collect') {
+      iconHtml = ANIMAL_EMOJI[m.animal];
+      label = `收集${getAnimalName(m.animal)}`;
+    } else {
+      iconHtml = OBSTACLE_EMOJI[m.obstacleType];
+      label = `消除${OBSTACLE_NAMES[m.obstacleType]}`;
+    }
+    return `<div class="mission-item${completed ? ' completed' : ''}">
+      <span class="mission-emoji">${iconHtml}</span>
+      <span class="mission-label">${label}: ${m.current}/${m.total}</span>
+      ${completed ? ' ✅' : ''}
+    </div>`;
+  }).join('');
+}
+
+function getAnimalName(a) {
+  const names = { cat:'小猫', bunny:'小兔', bear:'小熊', fox:'小狐狸', panda:'熊猫', frog:'青蛙' };
+  return names[a] || a;
+}
+
+// ==================== 计时器 ====================
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateUI();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!isAnimating) showLose();
+    }
+  }, 1000);
+}
+
+// ==================== 关卡解锁 ====================
+function getUnlockedLevel() {
+  return parseInt(localStorage.getItem('happyEliminate_unlocked') || '1');
+}
+function unlockLevel(level) {
+  const current = getUnlockedLevel();
+  if (level > current) {
+    localStorage.setItem('happyEliminate_unlocked', level);
+  }
+}
+
+// ==================== 胜利/失败弹窗 ====================
+function showWin() {
+  // 解锁下一关
+  unlockLevel(currentLevel + 1);
+  // 先启动烟花（和弹窗同时出现）
+  launchFireworks();
+  const overlay = document.getElementById('resultOverlay');
+  const content = document.getElementById('resultContent');
+  const hasNext = currentLevel < 30;
+  content.innerHTML = `
+    <h2>🎉 恭喜通关！</h2>
+    <h3>第 ${currentLevel} 关 完成！</h3>
+    <p>⭐ 得分: ${score}</p>
+    <p>👣 剩余步数: ${movesLeft}</p>
+    <p>⏱ 剩余时间: ${timeLeft}s</p>
+    <div style="margin-top:18px">
+      ${hasNext ? '<button class="btn btn-next" onclick="nextLevel()">▶ 下一关</button>' : '<p style="font-size:18px;color:#FF6B8A;">🏆 全部通关！你是最棒的！🏆</p>'}
+      <button class="btn btn-menu" onclick="goHome()">🏠 返回主页</button>
+    </div>
+  `;
+  overlay.style.display = 'flex';
+}
+
+function showLose() {
+  const overlay = document.getElementById('resultOverlay');
+  const content = document.getElementById('resultContent');
+  const reason = timeLeft <= 0 ? '时间耗尽' : '步数用完';
+  content.innerHTML = `
+    <h2>😢 挑战失败</h2>
+    <h3>${reason}</h3>
+    <p>⭐ 得分: ${score}</p>
+    <div style="margin-top:18px">
+      <button class="btn btn-play" onclick="restartLevel()">🔄 再试一次</button>
+      <button class="btn btn-menu" onclick="goHome()">🏠 返回主页</button>
+    </div>
+  `;
+  overlay.style.display = 'flex';
+}
+
+function nextLevel() {
+  document.getElementById('resultOverlay').style.display = 'none';
+  if (currentLevel >= 30) {
+    goHome();
+    return;
+  }
+  initLevel(currentLevel + 1);
+}
+
+function restartLevel() {
+  document.getElementById('resultOverlay').style.display = 'none';
+  clearInterval(timerInterval);
+  initLevel(currentLevel);
+}
+
+function goHome() {
+  document.getElementById('resultOverlay').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('homeOverlay').style.display = 'flex';
+  clearInterval(timerInterval);
+  populateLevelGrid();
+}
+
+// ==================== 首页 ====================
+let selectedHomeLevel = 1;
+
+function populateLevelGrid() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  const unlocked = getUnlockedLevel();
+  for (let i = 1; i <= 30; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn';
+    if (i > unlocked) btn.classList.add('locked');
+    if (i === selectedHomeLevel && i <= unlocked) btn.classList.add('current');
+    btn.textContent = i;
+    btn.onclick = () => {
+      if (i > unlocked) return; // 未解锁不可选
+      selectedHomeLevel = i;
+      populateLevelGrid();
+    };
+    grid.appendChild(btn);
+  }
+}
+
+function startSelectedLevel() {
+  if (selectedHomeLevel > getUnlockedLevel()) return; // 安全检查
+  document.getElementById('homeOverlay').style.display = 'none';
+  document.getElementById('resultOverlay').style.display = 'none';
+  clearInterval(timerInterval);
+  initLevel(selectedHomeLevel);
+}
+
+// ==================== 提示 ====================
+function findHint() {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (obstacleBoard[r][c]) continue;
+      if (board[r][c] && typeof board[r][c] === 'object' && board[r][c].type === 'powerup') continue;
+      if (c + 1 < COLS && !obstacleBoard[r][c+1] &&
+          !(board[r][c+1] && typeof board[r][c+1] === 'object' && board[r][c+1].type === 'powerup')) {
+        [board[r][c], board[r][c+1]] = [board[r][c+1], board[r][c]];
+        if (findAllRawMatches().length > 0) {
+          [board[r][c], board[r][c+1]] = [board[r][c+1], board[r][c]];
+          return [{row: r, col: c}, {row: r, col: c+1}];
+        }
+        [board[r][c], board[r][c+1]] = [board[r][c+1], board[r][c]];
+      }
+      if (r + 1 < ROWS && !obstacleBoard[r+1][c] &&
+          !(board[r+1][c] && typeof board[r+1][c] === 'object' && board[r+1][c].type === 'powerup')) {
+        [board[r][c], board[r+1][c]] = [board[r+1][c], board[r][c]];
+        if (findAllRawMatches().length > 0) {
+          [board[r][c], board[r+1][c]] = [board[r+1][c], board[r][c]];
+          return [{row: r, col: c}, {row: r+1, col: c}];
+        }
+        [board[r][c], board[r+1][c]] = [board[r+1][c], board[r][c]];
+      }
+    }
+  }
+  return null;
+}
+
+function showHint() {
+  if (isAnimating) return;
+  const hint = findHint();
+  if (hint) {
+    const cells = hint.map(p => document.querySelector(`.cell[data-row="${p.row}"][data-col="${p.col}"]`));
+    cells.forEach(cell => {
+      if (cell) {
+        cell.style.boxShadow = '0 0 20px #00BFFF, 0 0 40px rgba(0,191,255,0.8)';
+        cell.style.border = '3px solid #00BFFF';
+      }
+    });
+    setTimeout(() => {
+      cells.forEach(cell => {
+        if (cell) { cell.style.boxShadow = ''; cell.style.border = ''; }
+      });
+    }, 1500);
+    score = Math.max(0, score - 20);
+    updateUI();
+  }
+}
+
+// ==================== 烟花 ====================
+function launchFireworks() {
+  const canvas = document.getElementById('firework-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#FF6B8A','#FFD700','#7EC8A0','#87CEEB','#FFB74D','#CE93D8','#FF69B4','#00D2FF'];
+
+  function createFirework(x, y) {
+    const count = 30 + Math.random() * 30;
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+      const speed = 3 + Math.random() * 6;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.018 + Math.random() * 0.035,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 2 + Math.random() * 3
+      });
+    }
+  }
+
+  let count = 0;
+  const maxFw = 5;
+  const interval = setInterval(() => {
+    if (count >= maxFw) { clearInterval(interval); return; }
+    createFirework(
+      Math.random() * canvas.width * 0.6 + canvas.width * 0.2,
+      Math.random() * canvas.height * 0.4 + canvas.height * 0.08
+    );
+    count++;
+  }, 150);
+
+  let stopped = false;
+  function animate() {
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life -= p.decay;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      ctx.save(); ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 8; ctx.shadowColor = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    if (particles.length > 0 || count < maxFw) {
+      requestAnimationFrame(animate);
+    } else if (!stopped) {
+      stopped = true;
+      setTimeout(() => ctx.clearRect(0, 0, canvas.width, canvas.height), 300);
+    }
+  }
+  animate();
+}
+
+// ==================== 辅助 ====================
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+window.addEventListener('resize', () => {
+  const c = document.getElementById('firework-canvas');
+  if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
+});
+
+// ==================== 启动 ====================
+populateLevelGrid();
+document.getElementById('homeOverlay').style.display = 'flex';
+setupDragEvents();
+</script>
+</body>
+</html>
